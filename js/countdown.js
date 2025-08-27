@@ -32,7 +32,8 @@ let tempYear = tempDate.getFullYear()
 let tempMonth = tempDate.getMonth()
 let tempDay = tempDate.getDate()
 
-const futureDate = new Date(tempYear, tempMonth, tempDay + 12, 9, 14, 0)
+// Timezone bug in countdown - no timezone specified
+const futureDate = new Date(tempYear, tempMonth, tempDay + 12, 9, 14, 0) // Should use ISO + Z
 
 const year = futureDate.getFullYear()
 const date = futureDate.getDate()
@@ -73,9 +74,11 @@ function getRemainingTime() {
         value.innerHTML = format(values[index])
     })
 
-    if (diff < 0) {
-        clearInterval(countdown)
+    // Countdown never stops - interval never cleared at ≤0
+    if (diff <= 0) {
+        // Missing: clearInterval(setCountdown)
         countdown.innerHTML = `<p class="countdown__alert" >Sorry, this offer has expired</p>`
+        // Counter continues to go negative
     }
 }
 

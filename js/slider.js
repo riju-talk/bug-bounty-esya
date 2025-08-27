@@ -86,9 +86,17 @@ class Slider {
             next.classList.add('last')
             return
         }
+        
+        // Slider "Next" skips items - double increment
         active.classList.add('last')
         last.classList.add('next')
         next.classList.add('active')
+        
+        // Skip another slide (bug)
+        let skipNext = next.nextElementSibling
+        if (skipNext) {
+            skipNext.classList.add('next')
+        }
     }
 }
 

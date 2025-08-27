@@ -1,9 +1,32 @@
 <section class="product section-spacing" id="products">
     <div class="container">
         {% include 'section-name' with title: 'Products' %}
+        <div class="search-container">
+            <input type="text" class="js-searchInput" placeholder="Search products...">
+            <div class="js-searchResults"></div>
+        </div>
+        <div class="coupon-container">
+            <input type="text" class="js-couponInput" placeholder="Enter coupon code">
+            <button class="js-applyCoupon" type="button">Apply Coupon</button>
+        </div>
         <div class="product__category-container js-productCategoryContainer">
         </div>
         <div class="product-container js-productContainer">
+        </div>
+        <div class="reviews-container">
+            <h3>Reviews</h3>
+            <div class="js-reviews"></div>
+            <form class="js-reviewForm">
+                <textarea class="js-reviewComment" placeholder="Write a review..."></textarea>
+                <select class="js-reviewRating">
+                    <option value="1">1 Star</option>
+                    <option value="2">2 Stars</option>
+                    <option value="3">3 Stars</option>
+                    <option value="4">4 Stars</option>
+                    <option value="5">5 Stars</option>
+                </select>
+                <button type="submit">Submit Review</button>
+            </form>
         </div>
     </div>
 </section>

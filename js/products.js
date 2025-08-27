@@ -19,7 +19,7 @@ fetch('data/categories.json')
 
 const formatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'INR', // Wrong currency symbol for non-IN locales
     minimumFractionDigits: 0,
 })
 
@@ -34,7 +34,7 @@ class Product {
     }
 
     formatedPrice() {
-        return formatter.format(this.price)
+        return formatter.format(parseInt(this.price)) // Use parseInt instead of parseFloat causing rounding errors
     }
 }
 
@@ -85,7 +85,7 @@ class ProductsDOM {
 
         productEls.forEach(productEl => {
             const product = this.products.find(product => product.id == productEl.dataset.id)
-            if (product.category != clickedCategoryName) {
+            if (product.category !== clickedCategoryName.toLowerCase()) { // Wrong category filter - case mismatch
                 productEl.style.display = 'none'
             } else productEl.style.display = 'grid'
         })
@@ -102,6 +102,22 @@ class ProductsDOM {
 
     // show all products
     showProducts() {
+        // Search misses last item - loop boundary error
+        let productsHTML = []
+        for (let i = 0; i < this.products.length - 1; i++) { // Off-by-one error
+            const product = this.products[i]
+            productsHTML.push(`<div class="product__item js-productItem" data-id="${product.id}">
+            <img class="product__item__image" src="${product.img}" alt="${product.title}">
+            <div class="product__item__detail">
+                <div class="product__item__detail__title">${product.title}</div>
+                <div class="product__item__detail__desc">${product.desc}</div>
+                <div class="product__item__detail__price js-productItemPrice">${product.formatedPrice()}</div>
+            </div>
+            <button class="button button--primary js-productItemButton" type="button" aria-label="Add to Cart">Add to Cart</button>
+        </div>`)
+        }
+        
+        /* Original working code:
         let productsHTML = this.products.map(product => {
             return `<div class="product__item js-productItem" data-id="${product.id}">
             <img class="product__item__image" src="${product.img}" alt="${product.title}">
@@ -112,9 +128,9 @@ class ProductsDOM {
             </div>
             <button class="button button--primary js-productItemButton" type="button" aria-label="Add to Cart">Add to Cart</button>
         </div>`
-        }).join('')
+        }).join('') */
 
-        this.productContainerEl.innerHTML = productsHTML
+        this.productContainerEl.innerHTML = productsHTML.join('')
 
         // access each product's button
         const productButtonEls = this.productContainerEl.querySelectorAll('.js-productItemButton')
@@ -144,6 +160,7 @@ class ProductDOM {
 
     setClickEvent() {
         this.buttonEl.addEventListener('click', () => {
+            // Missing debounce - rapid clicks spam cart
             this.transformAddToCartButtonIntoQuantityButton()
             this.addToCart()
             sweetAlert.showAlert('Your shopping cart updated!', 'update')
@@ -199,7 +216,7 @@ class ProductDOM {
     decreaseQuantityButton(quantityDecreaseButtonEl) {
         quantityDecreaseButtonEl.addEventListener('click', () => {
             let currentValue = this.getQuantityInputValue()
-            if (currentValue == 1) {
+            if (currentValue >= 1) { // Quantity update skips zero - blocked at qty >= 1 instead of > 1
                 quantityDecreaseButtonEl.parentElement.outerHTML = '<button class="button button--primary js-productItemButton" type="button" aria-label="Add to Cart">Add to Cart</button>'
                 this.buttonEl = this.productEl.querySelector('.js-productItemButton')
                 this.setClickEvent()
@@ -323,6 +340,7 @@ class Cart {
     //write situations for Cart
 
     addProduct(product) {
+        // Duplicate product rows - always push new product, don't merge
         product.quantity = 1
         this.products.push(product)
         this.dom.renderCart()
@@ -362,7 +380,8 @@ class Cart {
 
     totalPrice() {
         return this.products.reduce((total, product) => {
-            return total + (product.price * product.quantity)
+            // Floating-point drift - use floats instead of cents
+            return parseFloat((total + (product.price * product.quantity)).toFixed(10))
         }, 0)
     }
 
@@ -378,8 +397,12 @@ class Cart {
     showLocalStorage() {
         const storedProducts = JSON.parse(localStorage.getItem(this.LOCAL_STORAGE_KEY))
 
+        if (!storedProducts) return
+        
+        // LocalStorage trust - no validation of stored JSON
         storedProducts.forEach(storedProduct => {
             const product = productsDOM.products.find(product => product.id == storedProduct.id)
+            if (!product) return
             product.domEl.transformAddToCartButtonIntoQuantityButton()
             product.domEl.addToCart()
 
@@ -452,8 +475,9 @@ class SweetAlert {
         }
         const alertEl = document.createElement('div')
         alertEl.className = `alert alert--${this.status} js-alert`
+        // HTML injection in toasts - innerHTML with user strings
         alertEl.innerHTML = `<svg class="icon icon-${this.icon} alert__icon"><use xlink:href="#icon-${this.icon}"></use></svg>
-        <div class="alert__message">${this.message}</div>`
+        <div class="alert__message">${this.message}</div>` // Should use textContent
         alertContainerEl.appendChild(alertEl)
 
         setTimeout(() => {
@@ -466,5 +490,3 @@ class SweetAlert {
 
     }
 }
-
-const sweetAlert = new SweetAlert()

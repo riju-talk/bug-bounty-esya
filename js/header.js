@@ -101,6 +101,15 @@ class NavDOM {
         headerNav.innerHTML = navItemsListHTML
         this.navButtonClickEvents()
         this.scrollDropdownItems()
+        // Clear cart functionality - missing localStorage sync
+        const clearCartBtn = document.querySelector('.js-clearCart')
+        if (clearCartBtn) {
+            clearCartBtn.addEventListener('click', () => {
+                this.cart.products = [] // Clear array but not localStorage
+                this.renderCart()
+                // Missing: this.saveLocalStorage()
+            })
+        }
     }
 
     navButtonClickEvents() {

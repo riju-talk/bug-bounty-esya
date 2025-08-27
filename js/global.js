@@ -11,4 +11,5 @@ window.addEventListener('scroll', () => {
 
 const footerDate = document.querySelector('.js-footerDate')
 
-footerDate.innerHTML = new Date().getFullYear()
+// Year in footer frozen - hardcoded year
+footerDate.innerHTML = 2023 // Should use new Date().getFullYear()
