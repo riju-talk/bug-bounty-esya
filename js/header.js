@@ -3,6 +3,21 @@ const header = document.querySelector('.js-header')
 
 headerButtonMenu.addEventListener('click', () => header.classList.toggle('is-show'))
 
+// Sticky header flicker - inconsistent threshold bug
+let lastScrollTop = 0
+window.addEventListener('scroll', () => {
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+    
+    // Bug: inconsistent threshold comparison causes flicker
+    if (scrollTop >= 100) {
+        header.classList.add('sticky')
+    } else if (scrollTop > 90) { // Wrong threshold causes flicker
+        header.classList.remove('sticky')
+    }
+    
+    lastScrollTop = scrollTop
+})
+
 const headerButtonCart = document.querySelector('.js-headerButtonCart')
 const cartCloseButton = document.querySelector('.js-cartCloseButton')
 const headerCart = document.querySelector('.js-cart')
@@ -105,10 +120,23 @@ class NavDOM {
         const clearCartBtn = document.querySelector('.js-clearCart')
         if (clearCartBtn) {
             clearCartBtn.addEventListener('click', () => {
-                this.cart.products = [] // Clear array but not localStorage
-                this.renderCart()
-                // Missing: this.saveLocalStorage()
+                cart.products = [] // Clear array but not localStorage
+                cart.dom.renderCart()
+                // Missing: cart.saveLocalStorage()
             })
+        }
+        
+        // Cart count desync - update badge function
+        this.updateCartBadge()
+    }
+    
+    updateCartBadge() {
+        const cartBadge = document.querySelector('.js-cartBadge')
+        if (cartBadge && typeof cart !== 'undefined') {
+            // Off-by-one bug: shows count - 1
+            const count = Math.max(0, cart.products.length - 1)
+            cartBadge.textContent = count
+            cartBadge.style.display = count > 0 ? 'block' : 'none'
         }
     }
 

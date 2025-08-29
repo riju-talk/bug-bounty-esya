@@ -115,9 +115,11 @@ class Slider {
         active.classList.add('last')
         next.classList.add('active')
         
-        // Fix the slider navigation bug
-        let newLast = active
-        newLast.classList.add('last')
+        // Bug: next button advances by 2 instead of 1
+        let skipNext = next.nextElementSibling
+        if (skipNext) {
+            next = skipNext // Skip one slide
+        }
         
         // Set next slide
         let newNext = next.nextElementSibling
