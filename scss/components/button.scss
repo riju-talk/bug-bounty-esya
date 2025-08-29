@@ -6,7 +6,13 @@
     border-radius: var(--border-radius);
     padding: .5rem 1rem;
     transition: var(--transition);
+    box-shadow: var(--box-shadow);
+    cursor: pointer;
     
+    &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    }
     
     &--primary {
         color: #FFF;
@@ -15,6 +21,7 @@
         &:hover {
             color: var(--color-secondary);
             background-color: var(--color-primary);
+            box-shadow: 0 6px 20px rgba(247, 223, 30, 0.3);
         }
     }
 
@@ -25,6 +32,7 @@
         &:hover {
             background-color: var(--color-primary);
             border: 2px solid var(--color-primary);
+            box-shadow: 0 6px 20px rgba(247, 223, 30, 0.2);
         }
     }
 }

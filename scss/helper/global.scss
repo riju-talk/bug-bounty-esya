@@ -67,6 +67,15 @@ section {
     cursor: pointer;
     animation: bounce 2s ease-in-out infinite;
     display: none;
+    box-shadow: var(--box-shadow);
+    width: 3.5rem;
+    height: 3.5rem;
+    transition: all var(--transition);
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
+    }
 
     &.is-show {
         display: grid;
