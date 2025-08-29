@@ -1,34 +1,161 @@
-# Vanilla JavaScript Ecommerce
+# App-Ocalypse: Bug Bounty E-commerce Challenge
 
-Vanilla JavaScript Ecommerce is a project I developed with Vanilla JavaScript to improve my JavaScript skills. It is created by taking mobile-first design into consideration. BEM methodology is used as the CSS naming method. SCSS/SASS is used as the CSS-preprocessor. 
+A deliberately vulnerable e-commerce application designed for security training and bug bounty practice. This project contains multiple security vulnerabilities and functional bugs of varying difficulty levels, organized into waves of increasing complexity.
 
-## [Live website](https://vanilla-js-ecommerce.vercel.app/)
+## Features
 
-# Project Structure
+- **Multiple Vulnerability Types**: XSS, CSRF, IDOR, Prototype Pollution, and more
+- **Progressive Difficulty**: Bugs organized into waves from easy to expert level
+- **Real-world Scenarios**: Realistic vulnerabilities found in production applications
+- **Training Platform**: Perfect for security training and CTF challenges
 
-Data of products and categories are under the 'data' folder as JSON format. LiquidJS is used as the template engine. 
+## Challenge Waves
 
-**js/**
-- _dom_products.js -> Includes JS actions about products like adding/removing the product to/from cart, updating product quantities, etc. This file is not used anymore. It was used before updating the project with JavaScript Classes. 
-- contact.js -> It is used to show active class/tab when clicked one of the contact tabs.
-- countdown.js -> It has countdown codes to set a future date for a marketing campaign. 
-- faqs.js -> It is used to show active class/question's answer when clicked the question they want to see its answer.
-- featured.js -> It is used to show the related products and smooth scrolling when clicked one of the buttons under the featured.
-- global.js -> There are codes of scroll top button. Also, getFullYear() method is used here to get the current year according to local time on the footer.
-- header.js -> There are codes for the header: Showing navigation menu when clicked the menu button on mobile, showing cart content when clicked the cart button, adding/showing navigation links and their dropdown items dynamically by manipulating DOM, smooth scrolling, and showing the related products when clicked the related link.
-- products.js -> It includes codes about fetching products and product categories from the JSON files and all events about categories, products, and cart.
-- slider.js -> There are codes to start slider and change the slider items when clicked the next/previous buttons.
+1. **Wave 0**: 8 bugs (115 points) - Easy warm-up round
+2. **Wave 1**: 9 additional bugs (155 points) - Complex functional issues
+3. **Wave 2**: 9 critical security bugs (285 points) - Security vulnerabilities
+4. **Wave 3**: 10 expert-level bugs (395 points) - Advanced exploitation required
+5. **Bonus Round**: All 46 bugs (1,285 points) - Ultimate challenge
 
-**views/**
-- components/ -> All HTML codes (.liquid format) are in this folder.
-- pages/ -> The HTML components/sections and the custom script codes are included in the pages in this folder.
-- main -> This is the main file including the common components and script codes for all sub-pages.
+## Project Structure
 
-**scss/**
-- components/ -> CSS codes are included in this folder.
-- config/ -> Responsive design codes are in the scss/config/mixin.scss file. CSS variables are in the scss/config/variables.scss. 
-- helper/ -> It is the folder includes formalize&normalize codes. Also, the common CSS codes are in the scss/helper/global file.
-- main -> It is used to import the CSS components.
+```
+├── data/               # Product and category data
+├── img/                # Product images and assets
+├── js/                 # JavaScript source files
+│   ├── security-issues.js  # Security vulnerabilities
+│   ├── products.js     # Product and cart logic
+│   ├── countdown.js    # Marketing countdown timer
+│   └── ...
+├── scss/              # Stylesheets (SASS)
+├── views/             # HTML templates (LiquidJS)
+├── server.js          # Express server
+└── package.json       # Project dependencies
+```
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Node.js 14+ and npm 6+
+- Git (for version control)
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/bug-bounty-esya.git
+   cd bug-bounty-esya
+   ```
+
+2. Run the setup script:
+
+   #### Windows:
+   ```cmd
+   start-competition.bat
+   ```
+
+   #### Linux/macOS:
+   ```bash
+   chmod +x start-competition.sh
+   ./start-competition.sh
+   ```
+
+   This will:
+   - Install all dependencies
+   - Set up the competition branches
+   - Verify the installation
+
+### Running the Application
+
+1. Start the development server with live reload:
+   ```bash
+   npm start
+   ```
+   or
+   ```bash
+   gulp
+   ```
+
+2. For production build:
+   ```bash
+   npm run build
+   ```
+
+3. Open `http://localhost:3000` in your browser
+
+### Competition Waves
+
+Switch between competition waves using git:
+
+```bash
+# Beginner level (8 bugs)
+git checkout wave-0
+
+# Intermediate level (17 bugs)
+git checkout wave-1
+
+# Advanced level (26 bugs)
+git checkout wave-2
+
+# Expert level (36 bugs)
+git checkout wave-3
+
+# All bugs (46 bugs)
+git checkout bonus-bugs
+```
+
+### Verification
+
+To verify all bugs are properly set up:
+
+#### Windows:
+```cmd
+competition-verification.bat
+```
+
+#### Linux/macOS:
+```bash
+./competition-verification.sh
+```
+
+## Verifying Bugs
+
+To verify all bugs are present and properly configured:
+
+```bash
+npm run verify
+```
+
+This will run the verification script that checks for all vulnerabilities.
+
+## Security Considerations
+
+ **WARNING**: This application is intentionally vulnerable and should NEVER be deployed to a public-facing server. Use only in a controlled environment for security training and testing purposes.
+
+## Documentation
+
+For detailed information about each vulnerability and how to exploit them, see the [WAVE-X-BUGS.md](WAVE-X-BUGS.md) files in the repository.
+
+## Contributing
+
+Contributions are welcome! Please read our [Contributing Guidelines](CONTRIBUTING.md) for details on how to submit pull requests.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Deploy Vercel
+
+Build Command
+```bash
+gulp dist
+```
+
+Output Directory
+```bash
+dist
+```
 
 ## Installation
 

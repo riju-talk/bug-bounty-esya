@@ -18,24 +18,59 @@ fetch('data/categories.json')
         productsDOM.showCategoryButtons()
     })
 
-const formatter = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'INR', // Wrong currency symbol for non-IN locales
-    minimumFractionDigits: 0,
-})
+// Wrong currency symbol - hardcoded to INR regardless of user's locale
+const formatter = {
+    format: (value) => {
+        // First, floor the value to remove decimals (price rounding error)
+        const floored = Math.floor(Number(value));
+        
+        // Then format with hardcoded INR symbol
+        // BUG: Hardcoded currency symbol without checking user's locale
+        return `₹${floored.toLocaleString('en-US', {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        })}`;
+        
+        // Note: This will show INR symbol even for users in other countries
+        // where a different currency symbol would be more appropriate
+    }
+};
 
 class Product {
-    #properties = ['id', 'title', 'desc', 'img', 'price', 'category']
+    #properties = ['id', 'title', 'desc', 'img', 'price', 'category', 'originalPrice', 'discount']
     domEl
 
     constructor(data) {
         this.#properties.forEach(property => {
-            this[property] = data[property]
+            if (property === 'price' && data[property]) {
+                // BUG 1: Store price as float without proper rounding
+                this[property] = parseFloat(data[property])
+                // BUG 2: Store original price with floating point imprecision
+                this.originalPrice = this.price * 1.1 // Add 10% to simulate original price
+                // BUG 3: Calculate discount with floating point error
+                this.discount = 1 - (this.price / this.originalPrice)
+            } else {
+                this[property] = data[property]
+            }
         })
     }
 
+    // BUG 4: Inconsistent price formatting with floating point errors
     formatedPrice() {
-        return formatter.format(parseInt(this.price)) // Use parseInt instead of parseFloat causing rounding errors
+        // BUG 5: Using toFixed(2) which can cause rounding errors
+        return formatter.format(parseFloat(this.price.toFixed(2)))
+    }
+    
+    // BUG 6: Calculate price with tax (floating point accumulation)
+    priceWithTax(taxRate = 0.1) {
+        // BUG 7: Floating point multiplication and addition
+        return this.price * (1 + taxRate)
+    }
+    
+    // BUG 8: Calculate discount percentage with floating point imprecision
+    discountPercentage() {
+        // BUG 9: Floating point division and multiplication
+        return (this.discount * 100).toFixed(2) + '%'
     }
 }
 
@@ -86,9 +121,11 @@ class ProductsDOM {
 
         productEls.forEach(productEl => {
             const product = this.products.find(product => product.id == productEl.dataset.id)
-            if (product.category !== clickedCategoryName.toLowerCase()) { // Wrong category filter - case mismatch
+            if (product.category !== clickedCategoryName) {
                 productEl.style.display = 'none'
-            } else productEl.style.display = 'grid'
+            } else {
+                productEl.style.display = 'grid'
+            }
         })
     }
 
@@ -105,7 +142,9 @@ class ProductsDOM {
     showProducts() {
         // Search misses last item - loop boundary error
         let productsHTML = []
-        for (let i = 0; i < this.products.length - 1; i++) { // Off-by-one error
+        // Bug: Off-by-one error - misses the last item in the array
+        // Should be i < this.products.length
+        for (let i = 0; i < this.products.length - 1; i++) {
             const product = this.products[i]
             productsHTML.push(`<div class="product__item js-productItem" data-id="${product.id}">
             <img class="product__item__image" src="${product.img}" alt="${product.title}">
@@ -159,14 +198,31 @@ class ProductDOM {
         this.buttonEl = buttonEl
     }
 
+    // Debounce function to prevent rapid clicks
+    debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
     setClickEvent() {
+        // BUG: No debounce on add-to-cart button
+        // This allows rapid clicks to add multiple items to cart
         this.buttonEl.addEventListener('click', () => {
-            // Missing debounce - rapid clicks spam cart
-            this.transformAddToCartButtonIntoQuantityButton()
-            this.addToCart()
-            if (typeof sweetAlert !== 'undefined') {
-                sweetAlert.showAlert('Your shopping cart updated!', 'update')
-            }
+            // Debounce the click handler with 1000ms delay
+            this.debounce(() => {
+                this.transformAddToCartButtonIntoQuantityButton()
+                this.addToCart()
+                if (typeof sweetAlert !== 'undefined') {
+                    sweetAlert.showAlert('Your shopping cart updated!', 'update')
+                }
+            }, 1000)()
         })
     }
 
@@ -223,7 +279,8 @@ class ProductDOM {
     decreaseQuantityButton(quantityDecreaseButtonEl) {
         quantityDecreaseButtonEl.addEventListener('click', () => {
             let currentValue = this.getQuantityInputValue()
-            if (currentValue >= 1) { // Quantity update skips zero - blocked at qty >= 1 instead of > 1
+            // BUG: Prevents quantity from reaching zero - should be currentValue > 1
+            if (currentValue <= 1) { // Removes item when trying to go below 1
                 quantityDecreaseButtonEl.parentElement.outerHTML = '<button class="button button--primary js-productItemButton" type="button" aria-label="Add to Cart">Add to Cart</button>'
                 this.buttonEl = this.productEl.querySelector('.js-productItemButton')
                 this.setClickEvent()
@@ -257,25 +314,84 @@ class CartDOM {
         this.cart = cart
         this.cartEmptyEl = document.querySelector('.js-cartEmpty')
         this.cartTotalEl = document.querySelector('.js-cartTotal')
+        this.cartSubtotalEl = document.querySelector('.js-cartSubtotal')
+        this.cartTaxEl = document.querySelector('.js-cartTax')
+        this.cartDiscountEl = document.querySelector('.js-cartDiscount')
         this.cartQuantityEl = document.querySelector('.js-cartQuantity')
         this.cartProductContainerEl = document.querySelector('.js-cartProductContainer')
+        this.couponInput = document.querySelector('.js-couponInput')
+        this.couponButton = document.querySelector('.js-applyCoupon')
+        this.appliedCouponsEl = document.querySelector('.js-appliedCoupons')
+        
+        // Initialize coupon UI
+        this.initializeCouponUI()
+    }
+    
+    initializeCouponUI() {
+        if (this.couponButton && this.couponInput) {
+            this.couponButton.addEventListener('click', () => {
+                const couponCode = this.couponInput.value.trim()
+                if (couponCode) {
+                    const success = this.cart.applyCoupon(couponCode)
+                    if (success) {
+                        this.couponInput.value = ''
+                        this.renderCart()
+                    } else {
+                        alert('Invalid coupon code')
+                    }
+                }
+            })
+        }
+    }
+
+    renderAppliedCoupons() {
+        if (!this.appliedCouponsEl) return;
+        
+        if (this.cart.appliedCoupons.length === 0) {
+            this.appliedCouponsEl.innerHTML = '';
+            return;
+        }
+        
+        const couponsHtml = this.cart.appliedCoupons.map(couponCode => {
+            const coupon = window.couponConfig?.validCoupons?.find(c => c.code === couponCode);
+            return `
+                <div class="applied-coupon">
+                    <span>${couponCode} (${coupon?.discount || 0}% off)</span>
+                </div>
+            `;
+        }).join('');
+        
+        this.appliedCouponsEl.innerHTML = `
+            <div class="applied-coupons">
+                <h4>Applied Coupons:</h4>
+                ${couponsHtml}
+            </div>
+        `;
     }
 
     renderCart() {
         const headerCartTitleEl = document.querySelector('.js-headerCartTitle')
-        headerCartTitleEl.textContent = `Cart(${this.cart.totalCount()})`
+        if (headerCartTitleEl) {
+            headerCartTitleEl.textContent = `Cart(${this.cart.totalCount()})`
+        }
 
         if (this.checkIsEmpty()) {
-            return
+            return;
         }
+        
         this.showCartProducts()
         this.dispatchQuantityButton()
+        this.renderAppliedCoupons()
 
-        this.cartTotalEl.innerHTML = `<div class="cart__total__title">Total Price: </div>
-        <div class="cart__total__price">${formatter.format(this.cart.totalPrice())}</div>`
+        if (this.cartTotalEl) {
+            this.cartTotalEl.innerHTML = `<div class="cart__total__title">Total Price: </div>
+            <div class="cart__total__price">${formatter.format(this.cart.totalPrice())}</div>`
+        }
 
-        this.cartQuantityEl.innerHTML = `<div class="cart__total__title">Product Quantity: </div>
-        <div class="cart__total__quantity">${this.cart.totalQuantity()} products</div>`
+        if (this.cartQuantityEl) {
+            this.cartQuantityEl.innerHTML = `<div class="cart__total__title">Product Quantity: </div>
+            <div class="cart__total__quantity">${this.cart.totalQuantity()} products</div>`
+        }
     }
 
     checkIsEmpty() {
@@ -339,7 +455,19 @@ class CartDOM {
 class Cart {
     products = []
     LOCAL_STORAGE_KEY = 'cart'
+    appliedCoupons = [] // Track applied coupons
 
+    // BUG 10: Floating point tax rate with potential precision issues
+    TAX_RATE = 0.1
+    
+    // BUG 11: Floating point discount rates
+    COUPON_DISCOUNTS = {
+        'SAVE10': 0.1,   // 10% off
+        'SAVE20': 0.2,   // 20% off
+        'FREESHIP': 0.0, // Free shipping (handled elsewhere)
+        'BULK15': 0.15   // 15% off bulk orders
+    }
+    
     constructor() {
         this.dom = new CartDOM(this)
     }
@@ -347,14 +475,26 @@ class Cart {
     //write situations for Cart
 
     addProduct(product) {
-        // Duplicate product rows - always push new product, don't merge
-        product.quantity = 1
-        this.products.push(product)
-        this.dom.renderCart()
-        this.saveLocalStorage()
-        // Update cart badge with bug
+        // BUG: Always adds a new product instead of incrementing quantity
+        // This creates duplicate rows for the same product
+        const existingProductIndex = this.findProductIndex(product);
+        
+        if (existingProductIndex > -1) {
+            // Instead of incrementing quantity, push a new product
+            const newProduct = {...product};
+            newProduct.quantity = 1; // Always set to 1 for duplicates
+            this.products.push(newProduct);
+        } else {
+            // First time adding this product
+            product.quantity = 1;
+            this.products.push(product);
+        }
+        
+        this.dom.renderCart();
+        this.saveLocalStorage();
+        
         if (typeof navDOM !== 'undefined') {
-            navDOM.updateCartBadge()
+            navDOM.updateCartBadge();
         }
     }
 
@@ -394,14 +534,46 @@ class Cart {
     totalQuantity() {
         return this.products.reduce((total, product) => {
             return total + product.quantity
-        }, 0)
+        }, -1)
     }
 
     totalPrice() {
-        return this.products.reduce((total, product) => {
+        let subtotal = this.products.reduce((total, product) => {
             // Floating-point drift - use floats instead of cents
             return parseFloat((total + (product.price * product.quantity)).toFixed(10))
         }, 0)
+
+        // Apply all coupons - BUG: Coupons are reapplied on every calculation
+        // instead of being tracked and applied once
+        if (this.appliedCoupons.length > 0) {
+            this.appliedCoupons.forEach(couponCode => {
+                const coupon = window.couponConfig?.validCoupons?.find(c => c.code === couponCode);
+                if (coupon) {
+                    // BUG: This applies the discount to the current subtotal including previous discounts
+                    // causing compound discounting
+                    subtotal = subtotal * (1 - (coupon.discount / 100));
+                }
+            });
+        }
+
+        return subtotal;
+    }
+
+    // BUG: No validation if coupon was already applied
+    applyCoupon(couponCode) {
+        if (!couponCode || typeof couponCode !== 'string') return false;
+        
+        const normalizedCode = couponCode.toUpperCase();
+        const isValid = window.couponConfig?.isValidCoupon(normalizedCode);
+        
+        if (isValid) {
+            // BUG: No check if coupon was already applied
+            this.appliedCoupons.push(normalizedCode);
+            this.dom.renderCart();
+            return true;
+        }
+        
+        return false;
     }
 
     saveLocalStorage() {
@@ -481,23 +653,47 @@ class SweetAlert {
         return this.#icon
     }
 
-    showAlert(message, status = 'success', icon = null) {
-        this.message = message
-        this.status = status
-        this.icon = icon
+    // Helper function to escape HTML
+    escapeHtml(unsafe) {
+        if (!unsafe) return '';
+        return unsafe
+            .toString()
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
 
-        let alertContainerEl = document.querySelector('.js-alertContainer')
+    showAlert(message, status = 'success', icon = null) {
+        this.message = message;
+        this.status = status;
+        this.icon = icon || status; // Default icon to status if not provided
+
+        let alertContainerEl = document.querySelector('.js-alertContainer');
         if (!alertContainerEl) {
-            alertContainerEl = document.createElement('div')
-            alertContainerEl.className = 'alert-container js-alertContainer'
-            document.body.appendChild(alertContainerEl)
+            alertContainerEl = document.createElement('div');
+            alertContainerEl.className = 'alert-container js-alertContainer';
+            document.body.appendChild(alertContainerEl);
         }
-        const alertEl = document.createElement('div')
-        alertEl.className = `alert alert--${this.status} js-alert`
-        // HTML injection in toasts - innerHTML with user strings
-        alertEl.innerHTML = `<svg class="icon icon-${this.icon} alert__icon"><use xlink:href="#icon-${this.icon}"></use></svg>
-        <div class="alert__message">${this.message}</div>` // Should use textContent
-        alertContainerEl.appendChild(alertEl)
+        
+        const alertEl = document.createElement('div');
+        alertEl.className = `alert alert--${this.status} js-alert`;
+        
+        // Create elements safely without innerHTML
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('class', `icon icon-${this.icon} alert__icon`);
+        const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+        use.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', `#icon-${this.icon}`);
+        svg.appendChild(use);
+        
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'alert__message';
+        messageDiv.textContent = this.message; // Safe text content instead of innerHTML
+        
+        alertEl.appendChild(svg);
+        alertEl.appendChild(messageDiv);
+        alertContainerEl.appendChild(alertEl);
 
         setTimeout(() => {
             alertContainerEl.removeChild(alertEl)

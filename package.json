@@ -1,8 +1,19 @@
 {
-  "name": "vanilla-js-ecommerce",
+  "name": "bug-bounty-esya",
   "version": "1.0.0",
+  "description": "Bug Bounty E-commerce Site - App-Ocalypse Challenge",
   "main": "index.js",
   "license": "MIT",
+  "scripts": {
+    "start": "gulp",
+    "dev": "gulp",
+    "build": "gulp dist",
+    "serve": "gulp",
+    "test": "node check-deps.js",
+    "verify": "node check-deps.js && competition-verification.bat",
+    "check": "node check-deps.js",
+    "setup": "npm install && node check-deps.js"
+  },
   "devDependencies": {
     "@tuanpham-dev/gulp-liquidjs": "^0.0.8",
     "browser-sync": "^2.29.3",
@@ -18,5 +29,24 @@
   },
   "dependencies": {
     "http-server": "^14.1.1"
-  }
+  },
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/bug-bounty-esya.git"
+  },
+  "keywords": [
+    "bug-bounty",
+    "security",
+    "ecommerce",
+    "ctf"
+  ],
+  "author": "App-Ocalypse Team",
+  "bugs": {
+    "url": "https://github.com/yourusername/bug-bounty-esya/issues"
+  },
+  "homepage": "https://github.com/yourusername/bug-bounty-esya#readme"
 }

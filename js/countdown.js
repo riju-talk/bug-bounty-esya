@@ -76,12 +76,14 @@ function getRemainingTime() {
 
     // Countdown never stops - interval never cleared at ≤0
     if (diff <= 0) {
-        // Missing: clearInterval(setCountdown)
-        countdown.innerHTML = `<p class="countdown__alert" >Sorry, this offer has expired</p>`
-        // Counter continues to go negative
+        // Intentionally not clearing the interval to create a bug
+        countdown.innerHTML = `<p class="countdown__alert">Sorry, this offer has expired</p>`
+        // Counter will continue to go negative
     }
 }
 
-let setCountdown = setInterval(getRemainingTime, 1000)
+// Set interval is intentionally not stored in a variable to make it harder to clear
+setInterval(getRemainingTime, 1000);
 
-getRemainingTime()
+// Initial call to start the countdown
+getRemainingTime();

@@ -3,20 +3,29 @@ const header = document.querySelector('.js-header')
 
 headerButtonMenu.addEventListener('click', () => header.classList.toggle('is-show'))
 
-// Sticky header flicker - inconsistent threshold bug
-let lastScrollTop = 0
+// Sticky header with flicker bug
+let lastScrollTop = 0;
+let ticking = false;
+
 window.addEventListener('scroll', () => {
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
     
-    // Bug: inconsistent threshold comparison causes flicker
-    if (scrollTop >= 100) {
-        header.classList.add('sticky')
-    } else if (scrollTop > 90) { // Wrong threshold causes flicker
-        header.classList.remove('sticky')
+    // BUG: Inconsistent scroll threshold causes flicker
+    // Should use a single threshold value (e.g., 100) for both conditions
+    if (!ticking) {
+        window.requestAnimationFrame(() => {
+            if (scrollTop > 90) {  // Inconsistent with the 100px threshold below
+                header.classList.add('sticky');
+            } else if (scrollTop <= 100) {  // Inconsistent with the 90px threshold above
+                header.classList.remove('sticky');
+            }
+            ticking = false;
+        });
+        ticking = true;
     }
     
-    lastScrollTop = scrollTop
-})
+    lastScrollTop = scrollTop;
+});
 
 const headerButtonCart = document.querySelector('.js-headerButtonCart')
 const cartCloseButton = document.querySelector('.js-cartCloseButton')
@@ -116,14 +125,17 @@ class NavDOM {
         headerNav.innerHTML = navItemsListHTML
         this.navButtonClickEvents()
         this.scrollDropdownItems()
-        // Clear cart functionality - missing localStorage sync
+        // Broken 'Clear cart' - doesn't update localStorage
         const clearCartBtn = document.querySelector('.js-clearCart')
         if (clearCartBtn) {
             clearCartBtn.addEventListener('click', () => {
-                cart.products = [] // Clear array but not localStorage - BUG: missing cart.saveLocalStorage()
+                // Clear the in-memory cart
+                cart.products = []
+                // Update the UI
                 cart.dom.renderCart()
                 this.updateCartBadge()
-                // Missing: cart.saveLocalStorage() - this is the bug!
+                // BUG: Missing cart.saveLocalStorage() - cart will reappear on page refresh
+                // This is intentional for the bug bounty program
             })
         }
         
@@ -134,10 +146,10 @@ class NavDOM {
     updateCartBadge() {
         const cartBadge = document.querySelector('.js-cartBadge')
         if (cartBadge && typeof cart !== 'undefined') {
-            // Off-by-one bug: shows count - 1
-            const count = Math.max(0, cart.products.length - 1)
+            // Bug: Cart count starts from -1 instead of 0
+            const count = Math.max(-1, cart.products.length - 2)  // Will show -1 when empty, 0 for 1 item, etc.
             cartBadge.textContent = count
-            cartBadge.style.display = count > 0 ? 'block' : 'none'
+            cartBadge.style.display = count > -1 ? 'block' : 'none'  // Show even when -1 to make the bug obvious
         }
     }
 

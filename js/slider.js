@@ -111,21 +111,19 @@ class Slider {
             return
         }
         
-        // Slider "Next" skips items - double increment
+        // Set current active to last
         active.classList.add('last')
+        
+        // Set next slide to active
         next.classList.add('active')
         
-        // Bug: next button advances by 2 instead of 1
-        let skipNext = next.nextElementSibling
-        if (skipNext) {
-            next = skipNext // Skip one slide
-        }
-        
-        // Set next slide
+        // Find the new next slide (the one after the new active)
         let newNext = next.nextElementSibling
         if (!newNext) {
             newNext = this.slideItemContainer.firstElementChild
         }
+        
+        // Set the new next slide's class
         newNext.classList.add('next')
     }
 }

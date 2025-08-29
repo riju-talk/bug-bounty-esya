@@ -48,17 +48,10 @@ class FilterManager {
     }
 }
 
-// Truncated names double cut
-function truncateProductName(name, maxLength = 20) {
-    // CSS + JS substring - double truncation
-    let truncated = name.substring(0, maxLength) // First truncation
-    if (truncated.length < name.length) {
-        truncated += '...'
-    }
-    
-    // CSS will also truncate with text-overflow: ellipsis
-    // Results in double truncation
-    return truncated
+// Fixed: Removed JavaScript truncation to prevent double truncation with CSS
+function truncateProductName(name) {
+    // Return the full name and let CSS handle truncation with text-overflow
+    return name;
 }
 
 // Out-of-stock still purchasable

@@ -38,47 +38,57 @@ class SearchManager {
     displaySearchQuery(query) {
         const queryDisplay = document.querySelector('.js-searchQuery')
         if (queryDisplay) {
-            // XSS vulnerability: using innerHTML with user input
-            queryDisplay.innerHTML = `Search results for: "${query}"` // Should use textContent
+            // Fixed: Using textContent to prevent XSS
+            queryDisplay.textContent = `Search results for: "${query}"`
         }
     }
     
     searchProducts(query) {
         if (!productsDOM || !productsDOM.products) return
         
-        // Case-sensitive search - no lowercasing
+        // Case-insensitive search - convert both query and product title to lowercase
         const results = productsDOM.products.filter(product => {
-            return product.title.includes(query) || // Should use toLowerCase()
-                   product.desc.includes(query) ||
-                   product.category.includes(query)
+            return product.title.toLowerCase().includes(query.toLowerCase()) ||
+                   product.desc.toLowerCase().includes(query.toLowerCase()) ||
+                   product.category.toLowerCase().includes(query.toLowerCase())
         })
         
         this.displayResults(results, query)
     }
     
+    // Helper function to escape HTML
+    escapeHtml(unsafe) {
+        return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
     displayResults(results, query) {
         if (!this.searchResults) return
         
         let html = ''
         
         if (results.length === 0) {
-            // HTML injection opportunity
-            html = `<div class="no-results">No results found for "${query}". Try <img src=x onerror=alert('XSS')></div>`
+            // Fixed: Escaping user input in the no results message
+            html = `<div class="no-results">No results found for "${this.escapeHtml(query)}"</div>`
         } else {
             html = results.map(product => {
-                // Product title HTML injection - product name with malicious content
-                return `<div class="search-result" data-id="${product.id}">
-                    <img src="${product.img}" alt="${product.title}">
+                // Fixed: Escaping all user-controlled data
+                return `<div class="search-result" data-id="${this.escapeHtml(product.id.toString())}">
+                    <img src="${this.escapeHtml(product.img)}" alt="${this.escapeHtml(product.title)}">
                     <div class="search-result-info">
-                        <h3>${product.title}</h3>
-                        <p>${product.desc}</p>
-                        <span class="price">${product.formatedPrice()}</span>
+                        <h3>${this.escapeHtml(product.title)}</h3>
+                        <p>${this.escapeHtml(product.desc)}</p>
+                        <span class="price">${this.escapeHtml(product.formatedPrice())}</span>
                     </div>
                 </div>`
             }).join('')
         }
         
-        // Another XSS point: rendering unescaped results
+        // Fixed: Using innerHTML is now safe since we've escaped all dynamic content
         this.searchResults.innerHTML = html
         
         // Add click handlers

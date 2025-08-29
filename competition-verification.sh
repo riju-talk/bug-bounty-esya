@@ -3,23 +3,63 @@
 # App-Ocalypse Competition Verification Script
 # Ensures all bugs are present and exploitable
 
-echo "🔍 App-Ocalypse Bug Verification Report"
-echo "======================================"
+# Colors for better output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
 
-# Function to check if bug exists
-check_bug() {
-    local file="$1" 
-    local pattern="$2"
-    local bug_name="$3"
-    
-    if grep -q "$pattern" "$file" 2>/dev/null; then
-        echo "✅ $bug_name - FOUND in $file"
+# Check if running on Windows
+if [ "$OS" = "Windows_NT" ]; then
+    # Windows specific settings
+    GREP_CMD='findstr /R /C:'
+else
+    GREP_CMD='grep -qE'
+fi
+
+# Function to check if file exists
+file_exists() {
+    if [ -f "$1" ]; then
         return 0
     else
-        echo "❌ $bug_name - MISSING in $file"
         return 1
     fi
 }
+
+# Function to check if bug exists
+check_bug() {
+    local file="$1"
+    local pattern="$2"
+    local bug_name="$3"
+    
+    if ! file_exists "$file"; then
+        echo -e "${RED}❌ $bug_name - FILE NOT FOUND: $file${NC}"
+        return 1
+    fi
+    
+    if [ "$OS" = "Windows_NT" ]; then
+        # Windows findstr command
+        if findstr /R /C:"$pattern" "$file" >nul 2>&1; then
+            echo -e "${GREEN}✅ $bug_name - FOUND in $file${NC}"
+            return 0
+        else
+            echo -e "${RED}❌ $bug_name - MISSING in $file${NC}"
+            return 1
+        fi
+    else
+        # Unix grep command
+        if grep -qE "$pattern" "$file" 2>/dev/null; then
+            echo -e "${GREEN}✅ $bug_name - FOUND in $file${NC}"
+            return 0
+        else
+            echo -e "${RED}❌ $bug_name - MISSING in $file${NC}"
+            return 1
+        fi
+    fi
+}
+
+echo -e "\n${YELLOW}🔍 App-Ocalypse Bug Verification Report${NC}"
+echo -e "${YELLOW}======================================${NC}\n"
 
 echo ""
 echo "🎯 FUNCTIONAL BUGS (16 bugs):"

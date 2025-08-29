@@ -3,18 +3,59 @@
 # App-Ocalypse Competition Branch Setup Script
 # Run this script to create all wave branches for the event
 
-echo "🚀 Setting up App-Ocalypse competition branches..."
+# Colors for better output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Function to check if command exists
+command_exists() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+# Check for git
+if ! command_exists git; then
+    echo -e "${RED}❌ Git is not installed. Please install Git and try again.${NC}"
+    exit 1
+fi
+
+echo -e "${GREEN}🚀 Setting up App-Ocalypse competition branches...${NC}"
 
 # Create and populate Wave 0 (Start - Easy bugs)
-git checkout -b wave-0
-echo "📦 Wave 0: Creating easy starter bugs..."
+echo -e "\n${YELLOW}📦 Wave 0: Creating easy starter bugs...${NC}"
 
-# Remove some complex bugs, keep only basic functional issues
-git rm js/security-issues.js js/search.js js/config.js sw.js 2>/dev/null || true
+# Check if we're in a git repository
+if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    echo -e "${RED}❌ Not a git repository. Please run this script from the project root.${NC}"
+    exit 1
+fi
 
-# Commit Wave 0 state
-git add .
-git commit -m "Wave 0: Initial 8 bugs deployed (115 points) - Easy warm-up round"
+# Create wave-0 branch if it doesn't exist
+if ! git show-ref --verify --quiet refs/heads/wave-0; then
+    git checkout -b wave-0
+    
+    # Remove some complex bugs, keep only basic functional issues
+    git rm -f js/security-issues.js js/search.js js/config.js sw.js 2>/dev/null || true
+    
+    # Create a simple config file
+    cat > js/config.js << 'EOL'
+// Basic configuration for Wave 0
+const CONFIG = {
+    API_URL: '/api',
+    DEBUG: true,
+    MAX_ITEMS: 50
+};
+EOL
+
+    # Commit Wave 0 state
+    git add .
+    git commit -m "Wave 0: Initial 8 bugs deployed (115 points) - Easy warm-up round"
+    echo -e "${GREEN}✅ Wave 0 setup complete!${NC}"
+else
+    echo -e "${YELLOW}ℹ️ Wave 0 branch already exists. Skipping...${NC}"
+    git checkout wave-0
+fi
 
 # Create Wave 1 (15 min mark - More functional complexity)  
 git checkout -b wave-1
