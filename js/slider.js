@@ -27,6 +27,8 @@ class Slider {
     constructor(slides) {
         this.slides = slides
         this.slideItemContainer = document.querySelector('.js-sliderItemContainer')
+        this.autoSlideInterval = null
+        this.autoSlideDelay = 5000 // 5 seconds
     }
 
     init() {
@@ -55,11 +57,33 @@ class Slider {
 
         buttonNext.addEventListener('click', () => {
             this.changeSlider()
+            this.resetAutoSlide()
         })
 
         buttonPrev.addEventListener('click', () => {
             this.changeSlider('prev')
+            this.resetAutoSlide()
         })
+        
+        this.startAutoSlide()
+    }
+    
+    startAutoSlide() {
+        this.autoSlideInterval = setInterval(() => {
+            this.changeSlider()
+        }, this.autoSlideDelay)
+    }
+    
+    stopAutoSlide() {
+        if (this.autoSlideInterval) {
+            clearInterval(this.autoSlideInterval)
+            this.autoSlideInterval = null
+        }
+    }
+    
+    resetAutoSlide() {
+        this.stopAutoSlide()
+        this.startAutoSlide()
     }
 
     changeSlider(type) {
@@ -89,14 +113,18 @@ class Slider {
         
         // Slider "Next" skips items - double increment
         active.classList.add('last')
-        last.classList.add('next')
         next.classList.add('active')
         
-        // Skip another slide (bug)
-        let skipNext = next.nextElementSibling
-        if (skipNext) {
-            skipNext.classList.add('next')
+        // Fix the slider navigation bug
+        let newLast = active
+        newLast.classList.add('last')
+        
+        // Set next slide
+        let newNext = next.nextElementSibling
+        if (!newNext) {
+            newNext = this.slideItemContainer.firstElementChild
         }
+        newNext.classList.add('next')
     }
 }
 
