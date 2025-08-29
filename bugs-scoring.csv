@@ -1,0 +1,49 @@
+Category,Bug Name,Where,Inject / Issue,Test / Exploit,Fix Hint,Verified,Points
+Functional,Cart count desync,js/header.js,Off-by-one when displaying count (count - 1),Add 2 items; badge shows 1,Use derived count from cart array length / sum of quantities,,15
+Functional,Price rounding error,js/products.js,Use parseInt instead of parseFloat on unit price,Item 19.99 totals as 19,Keep prices as floats; format only for UI,,10
+Functional,Quantity update skips zero,js/products.js,Decrement blocked at qty >= 1 instead of > 1,Can't reduce 2 → 1,Use if (qty > 1) qty--;,,10
+Functional,Duplicate product rows,js/products.js,"Always push new product, don't merge",Add same item twice; two rows,Merge by product id; adjust quantity,,20
+Functional,Misapplied coupon,js/search.js,Apply discount twice,10% coupon yields ~19% off,Apply once to base subtotal,,25
+Functional,Broken "Clear cart",js/header.js,Clear array but not localStorage,Reload → items reappear,Sync localStorage after mutation,,15
+Functional,Search misses last item,js/products.js,Loop ends at i < arr.length - 1,Final product never shows,Use proper loop boundary or for…of,,15
+Functional,Wrong category filter,js/products.js,Compare category object to string slug,Clicking category shows zero products,Normalize to slug string,,20
+Functional,Broken pagination,js/security-issues.js,start = page * size (off-by-one),Page 1 skips first items,start = (page-1)*size,,15
+Functional,Countdown never stops,js/countdown.js,Interval never cleared at ≤0,Counter goes negative,clearInterval(timer) + clamp to 0,,20
+Functional,Sticky header flicker,js/header.js,Toggle mismatch >= vs >,Header flickers on scroll,Use consistent threshold / debounce,,15
+Functional,Slider "Next" skips items,js/slider.js,Double increment index += 2,Next jumps 2 slides,"Single increment, modulo length",,20
+Functional,Featured buttons wrong target,js/featured.js,Scroll to #products only,Discover → top grid only,Use data-id for card scroll,,15
+Functional,FAQ toggle one-way,js/faqs.js,"Only add active, never remove",Can't close FAQ,Use toggle/remove logic,,10
+Functional,Year in footer frozen,js/global.js,Hardcoded year,Always 2023,Use new Date().getFullYear(),,5
+Functional,Missing debounce on add-btn,js/products.js,Rapid clicks spam cart,Double click → qty jumps,Add debounce / disable temporarily,,20
+Security,Reflected DOM XSS in search,js/search.js,innerHTML = userInput,Search <img src=x onerror=alert(1)>,Use textContent / sanitize,,40
+Security,Stored XSS in reviews,js/security-issues.js,Save raw comment with script,<script>alert(1)</script> persists,Escape before render / strip tags,,45
+Security,Product title HTML injection,data/products.json,Product name with <svg onload=alert(1)>,Malicious JSON modifies DOM,Sanitize JSON data,,35
+Security,Insecure fetch over HTTP,js/config.js,Change https:// to http://,MITM injects content,Force HTTPS only,,30
+Security,CSRF-like add-to-cart,js/config.js,Auto-add cart from URL,Visiting link silently adds items,Require explicit user click,,35
+Security,LocalStorage trust,js/products.js,No validation of stored JSON,Tamper DevTools → negative prices,Validate schema + clamp,,30
+Security,Weak coupon validation,js/config.js,Accept coupon if length > 0,Any string gives discount,Check against signed list,,25
+Security,Open redirect,js/config.js,Redirect param unsanitized,?next=https://evil.tld,Allow same-origin only,,40
+Security,Mixed content images,data/products.json,http:// links,"HTTPS broken, MITM risk",Force HTTPS / host locally,,25
+Security,Prototype pollution,js/security-issues.js,Untrusted proto keys,Inject modifies global prototype,Filter keys / safe merge,,50
+Security,HTML injection in toasts,js/products.js,innerHTML with user strings,Coupon "hack" renders HTML,Use textContent,,35
+Security,Clickjacking,Missing headers,no X-Frame-Options,Site embeddable in iframe,Evil overlay hijacks clicks,Add CSP frame-ancestors 'none',,30
+Security,Weak pseudo-auth,js/security-issues.js,isAdmin in localStorage,Flip flag in DevTools,Becomes admin without auth,Don't rely on LS; mock securely,,40
+Security,Sensitive data in source,js/config.js,API key hardcoded,Extract API_KEY_DEMO,Don't commit keys,,35
+Security,IDOR fetch orders,js/config.js,ID param directly used,Change ORDER_ID to another user,Restrict access; remove demo feature,,45
+Security,Service worker cache poison,sw.js,Overly broad cache,Poison HTML/JSON,Narrow cache + validate,,50
+Hidden,Negative qty edge case,js/security-issues.js,Allow -1 manual input,Total becomes negative,Clamp qty ≥ 1,,25
+Hidden,Floating-point drift,js/products.js,Use floats instead of cents,0.1+0.2=0.3000004 shows,Store cents as ints,,30
+Hidden,Fetch race condition,js/security-issues.js,"Last finished fetch renders, not latest",Rapid switch → wrong products,Track request tokens,,40
+Hidden,Timezone bug in countdown,js/countdown.js,new Date(…) no TZ,Different TZ show diff expiry,Users see inconsistent countdown,Use ISO + Z or local safe compute,,35
+Hidden,Case-sensitive search,js/search.js,term.includes(),No lowercasing,"shoe" fails; "Shoe" works,Normalize toLowerCase,,15
+Hidden,Truncated names double cut,js/accessibility-issues.js,CSS + JS substring,Double truncation,Product names over-truncated,Only 1 truncation,,20
+Hidden,Memory leak on rebind,js/security-issues.js,Event listeners not removed,Many duplicate listeners over time,Use delegation / cleanup,,35
+Hidden,Stale related products,js/accessibility-issues.js,Cached once never recomputed,Related list stuck,Recalculate on filter change,,25
+Hidden,Scroll-to null element,js/featured.js,querySelector('#card-id'),May be missing,JS error in console,Null-check before scroll,,20
+Hidden,Wrong currency symbol,js/products.js,format price hardcoded,Always "₹",Non-IN locales mislabeled,Use Intl.NumberFormat,,15
+Hidden,Accessibility regression,js/accessibility-issues.js,div used as button,No keyboard activation,Tab users can't click,Use with role,,30
+Hidden,Broken back navigation,js/accessibility-issues.js,filters don't push state,Browser back goes wrong,Filters reset unexpectedly,Use history.pushState/popstate,,35
+Hidden,Discount rounding bias,js/products.js,Math.floor on discount,Undercharges consistently,Totals slightly off,Apply consistent rounding,,20
+Hidden,Out-of-stock still purchasable,js/accessibility-issues.js,UI disables button only,Programmatic add works,Enforce check in logic,,30
+Hidden,Category slug mismatch,js/accessibility-issues.js,human vs slug,Compare "Women's Wear" vs womens-wear,Category filter fails,Normalize slug,,25
+Hidden,Persisted filters stuck,js/accessibility-issues.js,localStorage filter,Old filter persists after reload,All products hidden next session,Validate stored filter,,25

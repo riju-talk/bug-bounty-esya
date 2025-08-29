@@ -1,4 +1,22 @@
-// Moved fetch calls after productsDOM is defined
+// Fetch calls moved here - this creates a bug where productsDOM is undefined
+fetch('data/products.json')
+    .then(response => response.json())
+    .then(json => {
+        productsDOM.products = JSON.parse(json).map(product => {
+            return new Product(product)
+        })
+        productsDOM.showProducts()
+        cart.showLocalStorage()
+    })
+
+fetch('data/categories.json')
+    .then(response => response.json())
+    .then(json => {
+        productsDOM.categories = JSON.parse(json).map(name => {
+            return new Category(name)
+        })
+        productsDOM.showCategoryButtons()
+    })
 
 const formatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
