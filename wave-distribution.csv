@@ -1,0 +1,60 @@
+Wave,Time,Bug Category,Bug Name,Points,Rationale
+0,Start (0 min),Functional,Cart count desync,15,Easy warm-up bug
+0,Start (0 min),Functional,Price rounding error,10,Simple to spot and fix
+0,Start (0 min),Functional,Year in footer frozen,5,Quick confidence booster
+0,Start (0 min),Functional,FAQ toggle one-way,10,Basic DOM manipulation
+0,Start (0 min),Functional,Search misses last item,15,Loop boundary error
+0,Start (0 min),Functional,Broken "Clear cart",15,LocalStorage sync issue
+0,Start (0 min),Functional,Featured buttons wrong target,15,Scroll target bug
+0,Start (0 min),Hidden,Wrong currency symbol,15,Internationalization issue
+Wave 0 Subtotal,,,8 bugs,115 points,Warm-up round
+
+1,+15 min,Functional,Quantity update skips zero,10,Logic condition bug
+1,+15 min,Functional,Duplicate product rows,20,Array management
+1,+15 min,Functional,Wrong category filter,20,String comparison bug
+1,+15 min,Functional,Broken pagination,15,Math offset error
+1,+15 min,Functional,Sticky header flicker,15,Event handling bug
+1,+15 min,Functional,Slider "Next" skips items,20,Navigation logic
+1,+15 min,Functional,Missing debounce on add-btn,20,UX/Performance issue
+1,+15 min,Hidden,Case-sensitive search,15,String normalization
+1,+15 min,Hidden,Truncated names double cut,20,CSS+JS interaction
+Wave 1 Subtotal,,,9 bugs,155 points,Complex functional issues
+
+2,+30 min,Security,Reflected DOM XSS in search,40,Critical security flaw
+2,+30 min,Security,Product title HTML injection,35,JSON data injection
+2,+30 min,Security,Weak coupon validation,25,Input validation bug
+2,+30 min,Security,LocalStorage trust,30,Client-side trust issue
+2,+30 min,Security,HTML injection in toasts,35,DOM manipulation XSS
+2,+30 min,Security,Sensitive data in source,35,Data exposure
+2,+30 min,Security,Open redirect,40,URL manipulation attack
+2,+30 min,Functional,Countdown never stops,20,Timer management
+2,+30 min,Functional,Misapplied coupon,25,Business logic error
+Wave 2 Subtotal,,,9 bugs,285 points,Security vulnerabilities
+
+3,+45 min,Security,Stored XSS in reviews,45,Persistent XSS attack
+3,+45 min,Security,Prototype pollution,50,Advanced JS attack
+3,+45 min,Security,CSRF-like add-to-cart,35,Cross-site request forgery
+3,+45 min,Security,Weak pseudo-auth,40,Authentication bypass
+3,+45 min,Security,IDOR fetch orders,45,Authorization flaw
+3,+45 min,Security,Service worker cache poison,50,Advanced caching attack
+3,+45 min,Hidden,Fetch race condition,40,Async programming bug
+3,+45 min,Hidden,Memory leak on rebind,35,Resource management
+3,+45 min,Hidden,Floating-point drift,30,Numeric precision issue
+3,+45 min,Hidden,Negative qty edge case,25,Input validation edge case
+Wave 3 Subtotal,,,10 bugs,395 points,Nightmare-level challenges
+
+Remaining Bugs,Bonus,Security,Insecure fetch over HTTP,30,Infrastructure security
+Remaining Bugs,Bonus,Security,Mixed content images,25,Content security
+Remaining Bugs,Bonus,Security,Clickjacking,30,UI security
+Remaining Bugs,Bonus,Hidden,Timezone bug in countdown,35,Date/time handling
+Remaining Bugs,Bonus,Hidden,Stale related products,25,Cache invalidation
+Remaining Bugs,Bonus,Hidden,Scroll-to null element,20,Error handling
+Remaining Bugs,Bonus,Hidden,Accessibility regression,30,A11y compliance
+Remaining Bugs,Bonus,Hidden,Broken back navigation,35,Browser history
+Remaining Bugs,Bonus,Hidden,Discount rounding bias,20,Financial calculation
+Remaining Bugs,Bonus,Hidden,Out-of-stock still purchasable,30,Business logic
+Remaining Bugs,Bonus,Hidden,Category slug mismatch,25,Data normalization
+Remaining Bugs,Bonus,Hidden,Persisted filters stuck,25,State management
+Bonus Subtotal,,,12 bugs,330 points,Hidden bonus challenges
+
+Total,60 minutes,,46 bugs,1285 points,Complete challenge
