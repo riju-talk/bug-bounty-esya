@@ -120,9 +120,10 @@ class NavDOM {
         const clearCartBtn = document.querySelector('.js-clearCart')
         if (clearCartBtn) {
             clearCartBtn.addEventListener('click', () => {
-                cart.products = [] // Clear array but not localStorage
+                cart.products = [] // Clear array but not localStorage - BUG: missing cart.saveLocalStorage()
                 cart.dom.renderCart()
-                // Missing: cart.saveLocalStorage()
+                this.updateCartBadge()
+                // Missing: cart.saveLocalStorage() - this is the bug!
             })
         }
         

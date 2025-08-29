@@ -164,7 +164,9 @@ class ProductDOM {
             // Missing debounce - rapid clicks spam cart
             this.transformAddToCartButtonIntoQuantityButton()
             this.addToCart()
-            sweetAlert.showAlert('Your shopping cart updated!', 'update')
+            if (typeof sweetAlert !== 'undefined') {
+                sweetAlert.showAlert('Your shopping cart updated!', 'update')
+            }
         })
     }
 
@@ -205,11 +207,15 @@ class ProductDOM {
             let maxValue = this.getQuantityInputLimit()
             if (maxValue && currentValue >= maxValue) {
                 this.setQuantityInputValue(maxValue)
-                sweetAlert.showAlert(`Only ${maxValue} left!`, 'warning')
+                if (typeof sweetAlert !== 'undefined') {
+                    sweetAlert.showAlert(`Only ${maxValue} left!`, 'warning')
+                }
             } else {
                 this.setQuantityInputValue(currentValue + 1)
                 this.updateCartQuantity(+1)
-                sweetAlert.showAlert('Added to your cart!')
+                if (typeof sweetAlert !== 'undefined') {
+                    sweetAlert.showAlert('Added to your cart!')
+                }
             }
         })
     }
@@ -346,12 +352,20 @@ class Cart {
         this.products.push(product)
         this.dom.renderCart()
         this.saveLocalStorage()
+        // Update cart badge with bug
+        if (typeof navDOM !== 'undefined') {
+            navDOM.updateCartBadge()
+        }
     }
 
     removeProduct(product) {
         this.products.splice(this.findProductIndex(product), 1)
         this.dom.renderCart()
         this.saveLocalStorage()
+        // Update cart badge with bug
+        if (typeof navDOM !== 'undefined') {
+            navDOM.updateCartBadge()
+        }
     }
 
     findProductIndex(product) {
@@ -363,6 +377,10 @@ class Cart {
         product.quantity += operation
         this.dom.renderCart()
         this.saveLocalStorage()
+        // Update cart badge with bug
+        if (typeof navDOM !== 'undefined') {
+            navDOM.updateCartBadge()
+        }
     }
 
     isEmpty() {

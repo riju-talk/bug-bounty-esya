@@ -226,6 +226,8 @@
         place-items: center;
 
         &--cart {
+            position: relative;
+            
             &__title {
                 font-weight: var(--font-semibold);
                 display: none;
@@ -244,4 +246,21 @@
             }
         }
     }
+}
+
+.cart-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #ff4757;
+    color: white;
+    border-radius: 50%;
+    min-width: 20px;
+    height: 20px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    z-index: 10;
 }
