@@ -15,7 +15,9 @@ const reload = browserSync.reload
       notify: false,
       server: {
         baseDir: './'
-      } 
+      },
+      host: '0.0.0.0',
+      port: 5000
     })
 
   gulp.watch('./*.html').on('change', reload)
